@@ -1,6 +1,8 @@
 import utilities
 import pandas as pd
 import time
+import sqlite3
+from config import DATABASE_PATH
 
     
 def transform(df):
@@ -45,22 +47,110 @@ def extract(dataset):
 
 
 def load(df):
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
 
+    for index, row in df.iterrows():
 
-   # print(df.dtypes)
-   # print(df["Onboard_Total"]) --> Ex: Fatalities: 0 / Occupants: 7 Transformar en bbdd
-   # print(df.isnull().sum())
-   # filas_dup = df[df.duplicated()]
-    print(df.isnull().sum())
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Fecha (fecha, dia_semana, dia, mes, anio)
+                VALUES (?,?,?,?,?)
+                ''', (row['Incident_Date'], row['Date'].split()[0], row['Arit'].split("-")[0], 
+                      row['Arit'].split("-")[1], row['Arit'].split("-")[2]))
+        cursor.execute('''
+                SELECT fecha_id FROM Dim_Fecha WHERE fecha = ?
+                ''', (row['Incident_Date']))
+        fecha_id = cursor.fetchone()[0]
+        
+        # Aircraft nature??
+        # Aircaft_First_Flight en bbdd es YEAR en vez de DATE ¿?
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Aeronave (modelo, registro, motores, primer_vuelo)  
+                VALUES (?,?,?,?)
+                ''', (row['Aircraft_Model'], row['Aircraft_Registration'],
+                      row['Aircraft_Engines'], row['Aircaft_First_Flight']))
+        cursor.execute('''
+                SELECT aeronave_id FROM Dim_Aeronave WHERE modelo = ? AND registro = ?
+                ''', (row['Aircraft_Model'], row['Aircraft_Registration']))
+        aeronave_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Aeropuerto (nombre, codigo_iata, codigo_icao, pais)
+                VALUES (?,?,?,?)
+                ''', (row["Departure_Airport_Name"], row["Departure_Airport_IATA"],
+                      row["Departure_Airport_ICAO"], row["Departure_Airport_Country"]))   
+        cursor.execute('''
+                SELECT aeropuerto_id FROM Dim_Aeropuerto WHERE nombre = ?
+                ''', (row["Departure_Airport_Name"]))
+        aeropuerto_salida_id = cursor.fetchone()[0]
 
-
-
-
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Aeropuerto (nombre, codigo_iata, codigo_icao, pais)
+                VALUES (?,?,?,?)
+                ''', (row["Destination_Airport_Name"], row["Destination_Airport_IATA"],
+                      row["Destination_Airport_ICAO"], row["Destination_Airport_Country"]))
+        cursor.execute('''
+                SELECT aeropuerto_id FROM Dim_Aeropuerto WHERE nombre = ?
+                ''', (row["Destination_Airport_Name"]))
+        aeropuerto_destino_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Categoria_Incidente (categoria)
+                VALUES (?)
+                ''', (row["Incident_Category"]))
+        cursor.execute('''
+                SELECT categoria_id FROM Dim_Categoria_Incidente WHERE categoria = ?
+                ''', (row["Incident_Category"]))
+        categoria_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Causa_Incidente (causa)
+                VALUES (?)
+                ''', (row["Incident_Cause(es)"]))
+        cursor.execute('''
+                SELECT causa_id FROM Dim_Causa_Incidente WHERE causa = ?
+                ''', (row["Incident_Cause(es)"]))
+        causa_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Tipo_Dano (tipo_dano)
+                VALUES (?)
+                ''', (row["Aircaft_Damage_Type"]))
+        cursor.execute('''
+                SELECT tipo_dano_id FROM Dim_Tipo_Dano WHERE tipo_dano = ?
+                ''', (row["Aircaft_Damage_Type"]))
+        tipo_dano_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Dim_Fase_Vuelo (fase)
+                VALUES (?)
+                ''', (row["Aircraft_Phase"]))
+        cursor.execute('''
+                SELECT fase_id FROM Dim_Fase_Vuelo WHERE fase = ?
+                ''', (row["Aircraft_Phase"]))   
+        fase_id = cursor.fetchone()[0]
+        
+        cursor.execute('''
+                INSERT OR IGNORE INTO Hechos_Incidentes (fecha_id, aeronave_id, aeropuerto_salida_id, 
+                       aeropuerto_destino_id, ubicacion_incidente, categoria_id, causa_id, tipo_dano_id, 
+                       fase_id, hora, tripulacion_total, tripulacion_fallecidos, pasajeros_total, pasajeros_fallecidos,
+                       fatalidades_tierra, fatalidades_colision)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ''', (fecha_id, aeronave_id, aeropuerto_salida_id, aeropuerto_destino_id, row["Incident_Location"],
+                      categoria_id, causa_id, tipo_dano_id, fase_id, row["Time"], row["Occupants_Crew"],
+                      row["Fatalities_Crew"], row["Occupants_Passengers"], row["Fatalities_Passengers"],
+                      row["Ground_Casualties"], row["Collision_Casualties"]))
+        
+    conn.commit()
+    cursor.close()
+    conn.close()
+            
             
 def main():
     dataset = "../data/Aircraft_Incident_Dataset.csv"
     df = extract(dataset)
-    df = transform(df)
+    transform(df)
+    load(df)
 
 if __name__ == "__main__":
     main()
