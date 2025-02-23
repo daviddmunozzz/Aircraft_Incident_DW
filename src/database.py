@@ -32,13 +32,21 @@ def create_database():
             pais TEXT 
         );
 
-        CREATE TABLE IF NOT EXISTS Dim_Incidente (  
-            incidente_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            categoria TEXT,
-            causa TEXT,
-            tipo_dano TEXT
+        CREATE TABLE IF NOT EXISTS Dim_Categoria_Incidente (  
+            categoria_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria TEXT UNIQUE
         );
-                         
+
+        CREATE TABLE IF NOT EXISTS Dim_Causa_Incidente (  
+            causa_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            causa TEXT UNIQUE
+        );
+
+        CREATE TABLE IF NOT EXISTS Dim_Tipo_Dano (  
+            tipo_dano_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipo_dano TEXT UNIQUE
+        );
+
         CREATE TABLE IF NOT EXISTS Dim_Fase_Vuelo (
             fase_id INTEGER PRIMARY KEY AUTOINCREMENT,
             fase TEXT UNIQUE
@@ -51,29 +59,34 @@ def create_database():
             aeropuerto_salida_id INTEGER,
             aeropuerto_destino_id INTEGER,
             ubicacion_incidente TEXT,
-            incidente_id INTEGER,
+            categoria_id INTEGER,
+            causa_id INTEGER,
+            tipo_dano_id INTEGER,
             fase_id INTEGER,
             hora TIME,
+            
             tripulacion_total INTEGER DEFAULT 0,
             tripulacion_fallecidos INTEGER DEFAULT 0,
             pasajeros_total INTEGER DEFAULT 0,
             pasajeros_fallecidos INTEGER DEFAULT 0,
             fatalidades_tierra INTEGER DEFAULT 0,
             fatalidades_colision INTEGER DEFAULT 0,
+
             FOREIGN KEY (fecha_id) REFERENCES Dim_Fecha(fecha_id),
             FOREIGN KEY (aeronave_id) REFERENCES Dim_Aeronave(aeronave_id),
             FOREIGN KEY (aeropuerto_salida_id) REFERENCES Dim_Aeropuerto(aeropuerto_id),
             FOREIGN KEY (aeropuerto_destino_id) REFERENCES Dim_Aeropuerto(aeropuerto_id),
-            FOREIGN KEY (incidente_id) REFERENCES Dim_Incidente(incidente_id),
+            FOREIGN KEY (categoria_id) REFERENCES Dim_Categoria_Incidente(categoria_id),
+            FOREIGN KEY (causa_id) REFERENCES Dim_Causa_Incidente(causa_id),
+            FOREIGN KEY (tipo_dano_id) REFERENCES Dim_Tipo_Dano(tipo_dano_id),
             FOREIGN KEY (fase_id) REFERENCES Dim_Fase_Vuelo(fase_id)
         );
     """)
 
-
     conn.commit()
     cursor.close()
     conn.close()
-    print("✅ Base de datos SQLite creada exitosamente.")
+    print("Base de datos SQLite creada exitosamente.")
 
 if __name__ == "__main__":
     create_database()
