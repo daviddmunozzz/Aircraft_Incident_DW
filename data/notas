@@ -1,0 +1,59 @@
+# Creación de tablas de dimensiones
+    #-----------------------------INCIDENTES--------------------------------
+    dim_Incident = df[["Incident_Category"], ["Incident_Cause(es)"]]
+    dim_Incident = dim_Incident.rename(columns={"Incident_Category": "Categoria",
+                                                "Incident_Cause(es)": "Causa(s)"})
+    dim_Incident["Incidente_ID"] = range(1, len(dim_Incident) + 1) # todo
+
+    #-----------------------------INCIDENTES--------------------------------
+
+    #-----------------------------AERONAVES----------------------------------
+    dim_Aircraft = df[["Aircraft_Model"], ["Aircraft_Registration"], ["Aircraft_Operator"], ["Aircraft_Nature"],
+                        ["Aircraft_Damage"], ["Aircraft_Engines"], ["Aircraft_First_Flight"], ["Aircraft_Phase"]]
+    dim_Aircraft = dim_Aircraft.rename(columns={"Aircraft_Model": "Modelo",
+                                                "Aircraft_Registration": "Matricula",
+                                                "Aircraft_Operator": "Operador",
+                                                "Aircraft_Nature": "Naturaleza",
+                                                "Aircraft_Damage": "Daño",
+                                                "Aircraft_Engines": "Motores",
+                                                "Aircraft_First_Flight": "Primer_Vuelo",
+                                                "Aircraft_Phase": "Fase"})
+                                                
+    dim_Aircraft["Aeronave_ID"] = range(1, len(dim_Aircraft) + 1) # todo
+    #-----------------------------AERONAVES----------------------------------
+
+    #-----------------------------DATETIME----------------------------------
+    dim_DateTime = df["Time"]  # Separar dia(numero y dia_semana) mes año y hora
+    dim_DateTime["Fecha"] = df["Incident_Date"]
+    dim_DateTime["Dia"] = df["Arit"].str.extract(r'(\d{2})')
+    dim_DateTime["Dia_Semana"] = df["Date"].str.extract(r'(\w+)')
+    dim_DateTime["Mes"] = df["Arit"].str.extract(r'(\w{3})')
+    dim_DateTime["Año"] = df["Arit"].str.extract(r'(\d{4})')
+    dim_DateTime = dim_DateTime.rename(columns={"Time": "Hora"})    
+    
+    dim_DateTime["DateTime_ID"] = range(1, len(dim_DateTime) + 1) # todo
+    #-----------------------------DATETIME----------------------------------
+
+    #-----------------------------UBICACIÓN----------------------------------
+    dim_Location = df["Incident_Location"].apply(clean_location)
+    dim_Location = dim_Location.rename(columns={"Incident_Location": "Ubicacion"})
+    dim_Location["Ubicacion_ID"] = range(1, len(dim_Location) + 1) # todo
+    #-----------------------------UBICACIÓN----------------------------------
+
+    #-----------------------------TRIPULACIÓN----------------------------------
+    dim_Onboard = df[["Onboard_Crew"], ["Onboard_Passengers"], ["Onboard_Total"], ["Ground_Casualties"], ["Collision_Casualties"]]
+    dim_Onboard["Ground_Casualties"] = dim_Onboard["Ground_Casualties"].astype(str).str.extract(r'(\d+)')
+    dim_Onboard["Onboard_ID"] = range(1, len(dim_Onboard) + 1) # todo
+    #-----------------------------TRIPULACIÓN----------------------------------
+
+    #-----------------------------AEROPUERTO----------------------------------
+    dim_Airport = df[["Departure_Airport"], ["Destination_Airport"]] # Separar por pais y ciudad
+    dim_Airport["Airport_ID"] = range(1, len(dim_Airport) + 1) # todo
+    #-----------------------------AEROPUERTO----------------------------------
+
+    #-----------------------------CASUALTIES----------------------------------
+    dim_Casualties = df[["Ground_Casualties"], ["Collision_Casualties"]]
+
+    dim_Casualties["Casualties_ID"] = range(1, len(dim_Casualties) + 1) # todo
+    #-----------------------------CASUALTIES----------------------------------
+
