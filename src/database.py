@@ -21,11 +21,10 @@ def create_database():
             modelo TEXT,
             registro TEXT,
             motores TEXT,
-            naturaleza_operacion TEXT,
             primer_vuelo DATE                  
         );
 
-        CREATE TABLE Dim_Aeropuerto (
+        CREATE TABLE IF NOT EXISTS Dim_Aeropuerto (
             aeropuerto_id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT, 
             codigo_iata TEXT UNIQUE,
@@ -39,11 +38,6 @@ def create_database():
             causa TEXT,
             tipo_dano TEXT
         );
-
-        CREATE TABLE IF NOT EXISTS Dim_Fase_Vuelo (
-            fase_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fase TEXT
-        );
                          
         CREATE TABLE IF NOT EXISTS Dim_Fase_Vuelo (
             fase_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,22 +48,27 @@ def create_database():
             id_incidente INTEGER PRIMARY KEY AUTOINCREMENT,
             fecha_id INTEGER,
             aeronave_id INTEGER,
-            operador_id INTEGER,
-            ubicacion_id INTEGER,
+            aeropuerto_salida_id INTEGER,
+            aeropuerto_destino_id INTEGER,
+            ubicacion_incidente TEXT,
             incidente_id INTEGER,
             fase_id INTEGER,
             hora TIME,
-            fatalidades_total INTEGER,
-            fatalidades_tierra INTEGER,
-            fecha_primer_vuelo YEAR,
+            tripulacion_total INTEGER DEFAULT 0,
+            tripulacion_fallecidos INTEGER DEFAULT 0,
+            pasajeros_total INTEGER DEFAULT 0,
+            pasajeros_fallecidos INTEGER DEFAULT 0,
+            fatalidades_tierra INTEGER DEFAULT 0,
+            fatalidades_colision INTEGER DEFAULT 0,
             FOREIGN KEY (fecha_id) REFERENCES Dim_Fecha(fecha_id),
             FOREIGN KEY (aeronave_id) REFERENCES Dim_Aeronave(aeronave_id),
-            FOREIGN KEY (operador_id) REFERENCES Dim_Operador(operador_id),
-            FOREIGN KEY (ubicacion_id) REFERENCES Dim_Ubicacion(ubicacion_id),
+            FOREIGN KEY (aeropuerto_salida_id) REFERENCES Dim_Aeropuerto(aeropuerto_id),
+            FOREIGN KEY (aeropuerto_destino_id) REFERENCES Dim_Aeropuerto(aeropuerto_id),
             FOREIGN KEY (incidente_id) REFERENCES Dim_Incidente(incidente_id),
             FOREIGN KEY (fase_id) REFERENCES Dim_Fase_Vuelo(fase_id)
         );
     """)
+
 
     conn.commit()
     cursor.close()
