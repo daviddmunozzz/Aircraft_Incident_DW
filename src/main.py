@@ -62,8 +62,6 @@ def load(df):
                 ''', (row['Incident_Date']))
         fecha_id = cursor.fetchone()[0]
         
-        # Aircraft nature??
-        # Aircaft_First_Flight en bbdd es YEAR en vez de DATE ¿?
         cursor.execute('''
                 INSERT OR IGNORE INTO Dim_Aeronave (modelo, registro, motores, primer_vuelo)  
                 VALUES (?,?,?,?)

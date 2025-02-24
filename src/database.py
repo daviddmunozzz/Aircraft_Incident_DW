@@ -21,7 +21,7 @@ def create_database():
             modelo TEXT,
             registro TEXT,
             motores TEXT,
-            primer_vuelo DATE                  
+            primer_vuelo YEAR                  
         );
 
         CREATE TABLE IF NOT EXISTS Dim_Aeropuerto (
