@@ -73,10 +73,6 @@ def load(df):
    # filas_dup = df[df.duplicated()]
     print(df.isnull().sum())
 
-
-
-
-            
 def main():
     dataset = "../data/Aircraft_Incident_Dataset.csv"
     df = extract(dataset)
