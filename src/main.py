@@ -52,14 +52,6 @@ def load(df):
 
     for index, row in df.iterrows():
 
-<<<<<<< HEAD
-   # print(df.dtypes)
-   # print(df["Onboard_Total"]) --> Ex: Fatalities: 0 / Occupants: 7 Transformar en bbdd
-   # print(df.isnull().sum())
-   # filas_dup = df[df.duplicated()]
-    print(df.isnull().sum())
-
-=======
         cursor.execute('''
                 INSERT OR IGNORE INTO Dim_Fecha (fecha, dia_semana, dia, mes, anio)
                 VALUES (?,?,?,?,?)
@@ -154,7 +146,6 @@ def load(df):
     conn.close()
             
             
->>>>>>> 7e455b71a2e9f4edce16cfaf3b7436b6ace2b143
 def main():
     dataset = "../data/Aircraft_Incident_Dataset.csv"
     df = extract(dataset)
